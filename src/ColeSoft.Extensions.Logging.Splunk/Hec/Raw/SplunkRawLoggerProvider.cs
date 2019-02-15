@@ -37,7 +37,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
                     });
         }
 
-        protected override async Task SendToSplunk(IReadOnlyList<string> messages)
+        protected override async Task SendToSplunkAsync(IReadOnlyList<string> messages)
         {
             var builder = new StringBuilder();
             if (CurrentOptions.Source != null)
@@ -67,7 +67,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
             var formattedMessage = string.Join("\r\n", messages.Select(evt => evt.Trim()));
             var stringContent = new StringContent(formattedMessage);
             var response = await HttpClient.PostAsync(builder.ToString(), stringContent).ConfigureAwait(false);
-            await DebugSplunkResponse(response, "raw").ConfigureAwait(false);
+            await DebugSplunkResponseAsync(response, "raw").ConfigureAwait(false);
         }
     }
 }

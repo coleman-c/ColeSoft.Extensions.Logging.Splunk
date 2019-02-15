@@ -27,7 +27,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
             currentOptions = options;
             this.endPointCustomization = endPointCustomization;
 
-            MessageQueue = new BatchedSplunkLoggerProcessor(options, SendToSplunk);
+            MessageQueue = new BatchedSplunkLoggerProcessor(options, SendToSplunkAsync);
 
             optionsReloadToken = currentOptions.OnChange(ReloadLoggerOptions);
 
@@ -62,7 +62,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
             GC.SuppressFinalize(this);
         }
 
-        protected static async Task DebugSplunkResponse(HttpResponseMessage responseMessage, string loggerType)
+        protected static async Task DebugSplunkResponseAsync(HttpResponseMessage responseMessage, string loggerType)
         {
             switch (responseMessage.StatusCode)
             {
@@ -114,7 +114,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
             }
         }
 
-        protected abstract Task SendToSplunk(IReadOnlyList<string> messages);
+        protected abstract Task SendToSplunkAsync(IReadOnlyList<string> messages);
 
         private static Uri GetSplunkCollectorUrl(SplunkLoggerOptions options, string endPointCustomization)
         {

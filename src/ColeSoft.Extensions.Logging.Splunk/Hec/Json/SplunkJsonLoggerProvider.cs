@@ -32,12 +32,12 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Json
                     });
         }
 
-        protected override async Task SendToSplunk(IReadOnlyList<string> messages)
+        protected override async Task SendToSplunkAsync(IReadOnlyList<string> messages)
         {
             var formattedMessage = string.Join(" ", messages);
             var stringContent = new StringContent(formattedMessage, Encoding.UTF8, "application/json");
             var response = await HttpClient.PostAsync(string.Empty, stringContent).ConfigureAwait(false);
-            await DebugSplunkResponse(response, "json").ConfigureAwait(false);
+            await DebugSplunkResponseAsync(response, "json").ConfigureAwait(false);
         }
     }
 }
