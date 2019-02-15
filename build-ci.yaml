@@ -14,7 +14,7 @@ steps:
   displayName: dotnet test
   inputs:
     command: test
-    projects: 'test/**/*.csproj'
+    projects: '**/*[Tt]ests.csproj'
  
 - task: DotNetCoreCLI@2
   displayName: dotnet pack
@@ -34,4 +34,4 @@ steps:
   inputs:
     command: custom
     custom: nuget
-    arguments: push $(Build.ArtifactStagingDirectory)\packages\*.nupkg --source https://api.nuget.org/v3/index.json --no-service-endpoint --no-symbols --api-key $(nuget-apikey)
+    arguments: push $(Build.ArtifactStagingDirectory)\packages\*.nupkg --no-symbols --source https://api.nuget.org/v3/index.json --no-service-endpoint --api-key $(nuget-apikey)

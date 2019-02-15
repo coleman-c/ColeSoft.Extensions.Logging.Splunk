@@ -1,7 +1,9 @@
 # ColeSoft.Extensions.Logging.Splunk
 
 [![Build Status](https://karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/_apis/build/status/ColeSoft.Extensions.Logging.Splunk-ASP.NET%20Core-CI?branchName=master)](https://karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/_build/latest?definitionId=5&branchName=master)
-[![NuGet Version](http://img.shields.io/nuget/v/Loggr.Extensions.Logging.svg?style=flat)](https://www.nuget.org/packages/Loggr.Extensions.Logging/)
+[![Build Status](https://img.shields.io/azure-devops/tests/karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/6/master.svg)](https://karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/_build/latest?definitionId=5&branchName=master)
+[![NuGet Version](http://img.shields.io/nuget/v/ColeSoft.Extensions.Logging.Splunk.svg?style=flat)](https://www.nuget.org/packages/ColeSoft.Extensions.Logging.Splunk/)
+[![NuGet Version](http://img.shields.io/nuget/vpre/ColeSoft.Extensions.Logging.Splunk.svg?style=flat)](https://www.nuget.org/packages/ColeSoft.Extensions.Logging.Splunk/)
 
 Log to [Splunk][0] directly from [Microsoft.Extensions.Logging][1] using the [Splunk HTTP Event Collector (HEC)][5].
 
