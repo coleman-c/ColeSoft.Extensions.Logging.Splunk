@@ -11,10 +11,9 @@
     <PackageProjectUrl>https://github.com/coleman-c/ColeSoft.Extensions.Logging.Splunk</PackageProjectUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/coleman-c/ColeSoft.Extensions.Logging.Splunk</RepositoryUrl>
-    <PackageIcon>..\..\NugetIcon.jpg</PackageIcon>
     <Company>ColeSoft</Company>
     <Authors>Chris Coleman (chris@karumbo.com)</Authors>
-    <PackageIconUrl></PackageIconUrl>
+    <PackageIconUrl>https://github.com/coleman-c/ColeSoft.Extensions.Logging.Splunk/blob/master/NugetIcon.jpg?raw=true</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>
