@@ -101,7 +101,7 @@ TODO
 [0]: https://www.splunk.com/
 [1]: https://github.com/aspnet/Logging
 [2]: https://github.com/loggr/loggr-dotnet
-[3]: https://www.nuget.org/packages/Loggr.Extensions.Logging
+[3]: https://www.nuget.org/packages/ColeSoft.Extensions.Logging.Splunk
 [4]: https://docs.microsoft.com/en-us/dotnet/standard/net-standard
 [5]: https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector
 [6]: https://github.com/dotnet/standard/blob/master/docs/versions/netstandard2.0.md
