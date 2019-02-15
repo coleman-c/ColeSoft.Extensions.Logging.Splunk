@@ -12,7 +12,9 @@ using Microsoft.Extensions.Options;
 
 namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
 {
+#pragma warning disable CC0021 // Use nameof
     [ProviderAlias("Splunk")]
+#pragma warning restore CC0021 // Use nameof
     internal class SplunkRawLoggerProvider : SplunkHecBaseProvider
     {
         private readonly ISplunkRawPayloadTransformer payloadTransformer;

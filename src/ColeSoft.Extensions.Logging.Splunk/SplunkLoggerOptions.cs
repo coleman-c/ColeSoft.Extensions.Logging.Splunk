@@ -58,13 +58,13 @@ namespace ColeSoft.Extensions.Logging.Splunk
         /// <summary>
         /// Gets or sets the HEC authentication token.
         /// </summary>
-        /// <remarks>This must be specified.  See <see cref="http://dev.splunk.com/view/event-collector/SP-CAAAE6P#auth"/> for more information.</remarks>
+        /// <remarks>This must be specified.  See <see href="http://dev.splunk.com/view/event-collector/SP-CAAAE6P#auth"/> for more information.</remarks>
         public string AuthenticationToken { get; set; }
 
         /// <summary>
         /// Gets or sets indication to use or not hec token authentication at query string.
         /// </summary>
-        /// <remarks>Only applicable for Splunk Cloud.  See <see cref="http://dev.splunk.com/view/event-collector/SP-CAAAE6P#auth"/> for more information.</remarks>
+        /// <remarks>Only applicable for Splunk Cloud.  See <see href="http://dev.splunk.com/view/event-collector/SP-CAAAE6P#auth"/> for more information.</remarks>
         public bool UseAuthTokenAsQueryString { get; set; }
 
         /// <summary>
@@ -110,8 +110,8 @@ namespace ColeSoft.Extensions.Logging.Splunk
         /// the number of seconds to 3 decimal places since the unix epoch time being used.
         /// Any other format string here will be passed to the <see cref="System.DateTime.ToString(string)"/> method.
         /// </summary>
-        /// <see cref="https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings"/> and
-        /// <see cref="https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings"/>
+        /// <see href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings"/> and
+        /// <see href="https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings"/>
         public string TimestampFormat { get; set; }
 
         /// <summary>

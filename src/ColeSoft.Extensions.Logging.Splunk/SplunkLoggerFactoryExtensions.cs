@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using ColeSoft.Extensions.Logging.Splunk.Hec;
 using ColeSoft.Extensions.Logging.Splunk.Hec.Json;
 using ColeSoft.Extensions.Logging.Splunk.Hec.Raw;
@@ -11,6 +12,10 @@ using Microsoft.Extensions.Options;
 
 namespace ColeSoft.Extensions.Logging.Splunk
 {
+    /// <summary>
+    /// Extension methods over ILoggingBuilder &amp; ILoggingFactory to add Splunk provider functionality.
+    /// </summary>
+    [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Local", Justification = "Public extension builder methods.")]
     public static class SplunkLoggerFactoryExtensions
     {
         /// <summary>

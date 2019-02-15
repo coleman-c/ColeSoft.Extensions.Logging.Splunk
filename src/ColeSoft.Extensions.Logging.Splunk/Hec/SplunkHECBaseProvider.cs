@@ -14,23 +14,27 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
 {
     internal abstract class SplunkHecBaseProvider : ILoggerProvider, ISupportExternalScope
     {
-        private readonly IOptionsMonitor<SplunkLoggerOptions> options;
+#pragma warning disable CC0021 // Use nameof
+        private static readonly string SplunkHeaderValue = "Splunk";
+#pragma warning restore CC0021 // Use nameof
+
+        private readonly IOptionsMonitor<SplunkLoggerOptions> currentOptions;
         private readonly string endPointCustomization;
         private readonly IDisposable optionsReloadToken;
 
         protected SplunkHecBaseProvider(IOptionsMonitor<SplunkLoggerOptions> options, string endPointCustomization)
         {
-            this.options = options;
+            currentOptions = options;
             this.endPointCustomization = endPointCustomization;
 
             MessageQueue = new BatchedSplunkLoggerProcessor(options, SendToSplunk);
 
-            optionsReloadToken = this.options.OnChange(ReloadLoggerOptions);
+            optionsReloadToken = currentOptions.OnChange(ReloadLoggerOptions);
 
             ReloadLoggerOptions(options.CurrentValue);
         }
 
-        protected SplunkLoggerOptions CurrentOptions => options.CurrentValue;
+        protected SplunkLoggerOptions CurrentOptions => currentOptions.CurrentValue;
 
         protected ConcurrentDictionary<string, SplunkLogger> Loggers { get; } = new ConcurrentDictionary<string, SplunkLogger>();
 
@@ -54,14 +58,11 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
 
         public void Dispose()
         {
-            optionsReloadToken?.Dispose();
-            MessageQueue.Dispose();
-            HttpClient.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        protected abstract Task SendToSplunk(IReadOnlyList<string> messages);
-
-        protected async Task DebugSplunkResponse(HttpResponseMessage responseMessage, string loggerType)
+        protected static async Task DebugSplunkResponse(HttpResponseMessage responseMessage, string loggerType)
         {
             switch (responseMessage.StatusCode)
             {
@@ -103,42 +104,19 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
             Debug.WriteLine($"[DEBUG] Splunk HEC {loggerType} Body: {await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false)}.");
         }
 
-        private void ReloadLoggerOptions(SplunkLoggerOptions options)
+        protected virtual void Dispose(bool disposing)
         {
-            foreach (var logger in Loggers)
+            if (disposing)
             {
-                logger.Value.Options = options;
-            }
-
-            SetupHttpClient(options, endPointCustomization);
-        }
-
-        private void SetupHttpClient(SplunkLoggerOptions options, string endPointCustomization)
-        {
-            HttpClient = new HttpClient()
-            {
-                BaseAddress = GetSplunkCollectorUrl(options, endPointCustomization)
-            };
-
-            if (options.Timeout > 0)
-            {
-                HttpClient.Timeout = TimeSpan.FromMilliseconds(options.Timeout);
-            }
-
-            HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Splunk", options.AuthenticationToken);
-            if (options.ChannelIdType == SplunkLoggerOptions.ChannelIdOption.RequestHeader)
-            {
-                HttpClient.DefaultRequestHeaders.Add("x-splunk-request-channel", Guid.NewGuid().ToString());
-            }
-
-            if (options.CustomHeaders != null && options.CustomHeaders.Count > 0)
-            {
-                options.CustomHeaders.ToList().ForEach(keyValuePair =>
-                    HttpClient.DefaultRequestHeaders.Add(keyValuePair.Key, keyValuePair.Value));
+                optionsReloadToken?.Dispose();
+                MessageQueue.Dispose();
+                HttpClient.Dispose();
             }
         }
 
-        private Uri GetSplunkCollectorUrl(SplunkLoggerOptions options, string endPointCustomization)
+        protected abstract Task SendToSplunk(IReadOnlyList<string> messages);
+
+        private static Uri GetSplunkCollectorUrl(SplunkLoggerOptions options, string endPointCustomization)
         {
             var splunkCollectorUrl = options.SplunkCollectorUrl;
             if (!splunkCollectorUrl.EndsWith("/", StringComparison.InvariantCulture))
@@ -163,6 +141,42 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
             }
 
             return new Uri(splunkCollectorUrl);
+        }
+
+        private void SetupHttpClient(SplunkLoggerOptions options)
+        {
+            HttpClient =
+                new HttpClient
+                {
+                    BaseAddress = GetSplunkCollectorUrl(options, endPointCustomization)
+                };
+
+            if (options.Timeout > 0)
+            {
+                HttpClient.Timeout = TimeSpan.FromMilliseconds(options.Timeout);
+            }
+
+            HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(SplunkHeaderValue, options.AuthenticationToken);
+            if (options.ChannelIdType == SplunkLoggerOptions.ChannelIdOption.RequestHeader)
+            {
+                HttpClient.DefaultRequestHeaders.Add("x-splunk-request-channel", Guid.NewGuid().ToString());
+            }
+
+            if (options.CustomHeaders != null && options.CustomHeaders.Count > 0)
+            {
+                options.CustomHeaders.ToList().ForEach(keyValuePair =>
+                    HttpClient.DefaultRequestHeaders.Add(keyValuePair.Key, keyValuePair.Value));
+            }
+        }
+
+        private void ReloadLoggerOptions(SplunkLoggerOptions options)
+        {
+            foreach (var logger in Loggers)
+            {
+                logger.Value.Options = options;
+            }
+
+            SetupHttpClient(options);
         }
     }
 }

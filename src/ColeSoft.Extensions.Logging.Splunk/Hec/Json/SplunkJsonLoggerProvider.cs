@@ -7,7 +7,9 @@ using Microsoft.Extensions.Options;
 
 namespace ColeSoft.Extensions.Logging.Splunk.Hec.Json
 {
+#pragma warning disable CC0021 // Use nameof
     [ProviderAlias("Splunk")]
+#pragma warning restore CC0021 // Use nameof
     internal class SplunkJsonLoggerProvider : SplunkHecBaseProvider
     {
         private readonly ISplunkJsonPayloadTransformer payloadTransformer;

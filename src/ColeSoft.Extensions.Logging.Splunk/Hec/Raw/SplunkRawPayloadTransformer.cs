@@ -15,12 +15,14 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
 
         private readonly Func<LogData, object> payloadCreator;
 
+#pragma warning disable S3963 // "static" fields should be initialized inline
         static SplunkRawPayloadTransformer()
         {
             var logLevelString = LogLevel.Information.ToString();
             MessagePadding = new string(' ', logLevelString.Length + LogLevelPadding.Length);
             NewLineWithMessagePadding = Environment.NewLine + MessagePadding;
         }
+#pragma warning restore S3963 // "static" fields should be initialized inline
 
         public SplunkRawPayloadTransformer()
         {
