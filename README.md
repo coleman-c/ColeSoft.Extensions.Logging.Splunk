@@ -6,7 +6,7 @@ Log to [Splunk][0] directly from [Microsoft.Extensions.Logging][1] using the [Sp
 
 ## Installation
 
-ColeSoft.Extensions.Logging.Splunk installs through [NuGet][3] and requires [.NET Core][4] >= 2.0.
+ColeSoft.Extensions.Logging.Splunk installs through [NuGet][3] and requires [.NET Standard][4] >= [2.0][6].
 
 ```
 PS> Install-Package ColeSoft.Extensions.Logging.Splunk
@@ -83,9 +83,13 @@ to the AddSplunk call or via the application settings json file.
 ### Payload Customisation
 TODO
 
+## Acknowlegements
+TODO
+
 [0]: https://www.splunk.com/
 [1]: https://github.com/aspnet/Logging
 [2]: https://github.com/loggr/loggr-dotnet
 [3]: https://www.nuget.org/packages/Loggr.Extensions.Logging
-[4]: https://github.com/dotnet/core
+[4]: https://docs.microsoft.com/en-us/dotnet/standard/net-standard
 [5]: https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector
+[6]: https://github.com/dotnet/standard/blob/master/docs/versions/netstandard2.0.md
