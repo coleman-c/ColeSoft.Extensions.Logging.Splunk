@@ -1,6 +1,7 @@
 # ColeSoft.Extensions.Logging.Splunk
 
-[![Build status](https://ci.appveyor.com/api/projects/status/e4s6reeh69qf580p/branch/master?svg=true)](https://ci.appveyor.com/project/iMobile3/loggr-extensions-logging/branch/master) [![NuGet Version](http://img.shields.io/nuget/v/Loggr.Extensions.Logging.svg?style=flat)](https://www.nuget.org/packages/Loggr.Extensions.Logging/)
+[![Build Status](https://karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/_apis/build/status/ColeSoft.Extensions.Logging.Splunk-ASP.NET%20Core-CI?branchName=master)](https://karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/_build/latest?definitionId=5&branchName=master)
+[![NuGet Version](http://img.shields.io/nuget/v/Loggr.Extensions.Logging.svg?style=flat)](https://www.nuget.org/packages/Loggr.Extensions.Logging/)
 
 Log to [Splunk][0] directly from [Microsoft.Extensions.Logging][1] using the [Splunk HTTP Event Collector (HEC)][5].
 
