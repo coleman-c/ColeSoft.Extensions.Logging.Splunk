@@ -51,8 +51,8 @@ namespace ColeSoft.Extensions.Logging.Splunk
         /// Gets or sets the Url for the splunk collector.
         /// </summary>
         /// <remarks>This must be specified.</remarks>
-        /// <example>https://http-inputs-&lt;customer&gt;.splunkcloud.com/services/collector</example>
-        /// <example>https://my-server:8088/services/collector</example>
+        /// <example>https://http-inputs-&lt;customer&gt;.splunkcloud.com/services/collector.</example>
+        /// <example>https://my-server:8088/services/collector.</example>
         public string SplunkCollectorUrl { get; set; }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace ColeSoft.Extensions.Logging.Splunk
         public Dictionary<string, string> CustomHeaders { get; set; }
 
         /// <summary>
-        /// Gets or sets where, if at all, to include the channel identifier in the query to the endpoint.  The default value is <see cref="ChannelIdOption.None"/>
+        /// Gets or sets where, if at all, to include the channel identifier in the query to the endpoint.  The default value is <see cref="ChannelIdOption.None"/>.
         /// </summary>
         public ChannelIdOption ChannelIdType { get; set; }
 
@@ -101,7 +101,7 @@ namespace ColeSoft.Extensions.Logging.Splunk
         public string Source { get; set; }
 
         /// <summary>
-        /// Gets or sets the sourcetype value to assign to the event data
+        /// Gets or sets the sourcetype value to assign to the event data.
         /// </summary>
         public string SourceType { get; set; }
 

@@ -14,7 +14,7 @@ namespace ColeSoft.Extensions.Logging.Splunk
         /// seconds to 3 decimal places since the unix epoch time.  It can be overridden by specifying a
         /// <see cref="DateTime"/> format string to the <see cref="SplunkLoggerOptions.TimestampFormat"/> configuration option.
         /// <see cref="https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings"/> and
-        /// <see cref="https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings"/>
+        /// <see cref="https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings"/>.
         /// </summary>
         public string Timestamp { get; set; }
 

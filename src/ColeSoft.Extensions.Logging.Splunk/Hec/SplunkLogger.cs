@@ -48,14 +48,14 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
             }
         }
 
-        protected abstract void WriteMessage(LogLevel logLevel, string logName, EventId eventId, string message, Exception exception);
-
         public bool IsEnabled(LogLevel logLevel)
         {
             return logLevel != LogLevel.None;
         }
 
         public IDisposable BeginScope<TState>(TState state) => ScopeProvider?.Push(state) ?? NullScope.Instance;
+
+        protected abstract void WriteMessage(LogLevel logLevel, string logName, EventId eventId, string message, Exception exception);
 
         protected string[] GetScopeInformation()
         {

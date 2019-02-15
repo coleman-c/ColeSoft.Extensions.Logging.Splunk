@@ -32,6 +32,11 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
             this.payloadCreator = payloadCreator;
         }
 
+        public object Transform(LogData logData)
+        {
+            return payloadCreator(logData);
+        }
+
         private static object Default(LogData arg)
         {
             var builder = logBuilder;
@@ -109,11 +114,6 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
                     stringBuilder.AppendLine();
                 }
             }
-        }
-
-        public object Transform(LogData logData)
-        {
-            return payloadCreator(logData);
         }
     }
 }
