@@ -1,5 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace ColeSoft.Extensions.Logging.Splunk
 {
@@ -32,6 +34,7 @@ namespace ColeSoft.Extensions.Logging.Splunk
         /// <summary>
         /// The <see cref="LogLevel"/> that this event was logged with.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public LogLevel Level { get; set; }
 
         /// <summary>
