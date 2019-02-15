@@ -8,6 +8,7 @@
 
 Log to [Splunk][0] directly from [Microsoft.Extensions.Logging][1] using the [Splunk HTTP Event Collector (HEC)][5].
 
+The Splunk HEC will need to be configured on the Splunk server as [detailed here][5].
 ## Installation
 
 ColeSoft.Extensions.Logging.Splunk installs through [NuGet][3] and requires [.NET Standard][4] >= [2.0][6].
@@ -33,7 +34,7 @@ IServiceCollection services;  // from somewhere
 
 services.AddLogging(builder => builder.AddSplunk());
 ```
-As a minimum the following configuration must be supplied to that the provider know where 
+As a minimum the following configuration must be supplied so that the provider knows where 
 to send the data and with what credential:
 ```json
 "Logging": {
@@ -59,9 +60,6 @@ logger.LogInformation("This is information");
 
 ## Advanced Topics
 
-### Splunk Endpoint (Json vs Raw)
-TODO
-
 ### Available Configuration Options
 
 Other configuration options are availble to be set on the SplunkLoggerOptions, either in the delegate supplied
@@ -84,6 +82,16 @@ to the AddSplunk call or via the application settings json file.
 | BatchInterval             	| The frequency, in  milliseconds, with which to try and send events to the HEC endpoint.  A value of 0 will only result in sends when greater than <see cref="BatchSize"/> events have been collected.                                                                                       	| `1000`          	|
 | BatchSize                 	| Once BatchSize items are collected they will be sent regardless of time till the next BatchInterval.  Also, The maximum number of items to send in a single batch.                                                                                                                          	| `50`            	|
 
+### Splunk Endpoint (Json vs Raw)
+Starting with Splunk 6.4 then it is possible to transmit data to a Raw event collector as well as the default Json event collector.  
+
+Overloads of the `AddSplunk` call will accept a parameter controling the endpoint targeted. 
+In the case of Raw then the data is formatted in a default manner (not as a Json string) and passed to the 
+`services/collector/raw` endpoint.  The format of this payload can be customised as detailed in the section [below][7].
+```c#
+AddSplunk(SplunkEndpoint.Raw)
+```
+
 ### Payload Customisation
 TODO
 
@@ -97,3 +105,4 @@ TODO
 [4]: https://docs.microsoft.com/en-us/dotnet/standard/net-standard
 [5]: https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector
 [6]: https://github.com/dotnet/standard/blob/master/docs/versions/netstandard2.0.md
+[7]: https://github.com/coleman-c/ColeSoft.Extensions.Logging.Splunk#payload-customisation
