@@ -34,4 +34,4 @@ steps:
   inputs:
     command: custom
     custom: nuget
-    arguments: push $(Build.ArtifactStagingDirectory)/packages/*.nupkg --source https://api.nuget.org/v3/index.json --no-service-endpoint --api-key $(nuget-apikey)
+    arguments: push $(Build.ArtifactStagingDirectory)\packages\*.nupkg --source https://api.nuget.org/v3/index.json --no-service-endpoint --api-key $(nuget-apikey)
