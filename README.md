@@ -2,7 +2,7 @@
 
 
 
-[![Build Status](https://karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/_apis/build/status/ColeSoft.Extensions.Logging.Splunk-CI?branchName=master)](https://karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/_build/latest?definitionId=6&branchName=master)
+[![Build Status](https://karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/_apis/build/status/ColeSoft.Extensions.Logging.Splunk-CI?branchName=master)](https://karumbo.visualstudio.com/ColeSoft.Extensions.Logging.Splunk/_build/latest?definitionId=6&branchName=master)  
 [![NuGet Version](http://img.shields.io/nuget/v/ColeSoft.Extensions.Logging.Splunk.svg?style=flat)](https://www.nuget.org/packages/ColeSoft.Extensions.Logging.Splunk/)
 [![NuGet Version](http://img.shields.io/nuget/vpre/ColeSoft.Extensions.Logging.Splunk.svg?style=flat)](https://www.nuget.org/packages/ColeSoft.Extensions.Logging.Splunk/)
 
