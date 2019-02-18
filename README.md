@@ -95,7 +95,7 @@ Overloads of the `AddSplunk` call will accept a parameter controling the endpoin
 In the case of Raw then the data is formatted in a default manner (not as a Json string) and passed to the 
 `services/collector/raw` endpoint.  The format of this payload can be customised as detailed in the section [below][7].
 ```c#
-AddSplunk(SplunkEndpoint.Raw)
+logging.AddSplunk(SplunkEndpoint.Raw)
 ```
 
 ### Payload Customisation
@@ -122,6 +122,7 @@ but this could be a more complex object which overrides ToString.
 
 ```c#
 logging.AddSplunk(
+    SplunkEndpoint.Raw,
     data => 
     {
         var sb = new StringBuilder();
