@@ -9,12 +9,13 @@ namespace ColeSoft.Extensions.Logging.Splunk.Utils
 {
     internal sealed class BatchedSplunkLoggerProcessor : IDisposable
     {
-        private readonly ConcurrentBag<string> events = new ConcurrentBag<string>();
-        private readonly Timer timer;
+        private readonly ConcurrentQueue<string> events = new ConcurrentQueue<string>();
+        private readonly AutoResetEvent wh = new AutoResetEvent(false);
+        private readonly AutoResetEvent complete = new AutoResetEvent(false);
         private readonly Func<IReadOnlyList<string>, Task> emitAction;
         private readonly IDisposable optionsReloadToken;
-        private SplunkLoggerOptions currentOptions;
 
+        private SplunkLoggerOptions currentOptions;
         private bool isDisposed;
         private bool isDisposing;
 
@@ -23,25 +24,23 @@ namespace ColeSoft.Extensions.Logging.Splunk.Utils
             this.emitAction = emitAction ?? throw new ArgumentNullException(nameof(emitAction));
 
             currentOptions = options.CurrentValue;
-            timer = options.CurrentValue.BatchInterval > 0
-                ? new Timer(EmitTimeCheck, null, 0, options.CurrentValue.BatchInterval)
-                : new Timer(EmitTimeCheck, null, 0, Timeout.Infinite);
+            optionsReloadToken = options.OnChange(
+                o =>
+                {
+                    currentOptions = options.CurrentValue;
+                });
 
-            optionsReloadToken = options.OnChange(o =>
-            {
-                timer.Change(0, options.CurrentValue.BatchInterval > 0 ? options.CurrentValue.BatchInterval : Timeout.Infinite);
-                currentOptions = options.CurrentValue;
-            });
+            Task.Factory.StartNew(EmitAsync, TaskCreationOptions.LongRunning);
         }
 
         public void EnqueueMessage(string message)
         {
             if (!isDisposed && !isDisposing)
             {
-                events.Add(message);
+                events.Enqueue(message);
                 if (events.Count >= currentOptions.BatchSize)
                 {
-                    Emit();
+                    wh.Set();
                 }
             }
         }
@@ -51,60 +50,68 @@ namespace ColeSoft.Extensions.Logging.Splunk.Utils
             if (!isDisposed)
             {
                 isDisposing = true;
-                while (events.Count != 0)
-                {
-                    Emit();
-                }
 
-                timer.Dispose();
+                wh.Set();
+                complete.WaitOne();
+
                 optionsReloadToken.Dispose();
+                wh.Dispose();
+                complete.Dispose();
 
                 isDisposing = false;
                 isDisposed = true;
             }
         }
 
-        private void EmitTimeCheck(object state)
+        private async Task EmitAsync()
         {
-            if (events.Count > 0)
+            List<string> GatherEvents()
             {
-                Emit();
-            }
-        }
-
-        private void Emit()
-        {
-            Task.Run(
-                async () =>
+                var continueExtraction = true;
+                var emitEvents = new List<string>();
+                while (continueExtraction)
                 {
-                    var continueExtraction = true;
-                    var emitEvents = new List<string>();
-                    while (continueExtraction)
+                    if (events.Count == 0)
                     {
-                        if (events.Count == 0)
+                        continueExtraction = false;
+                    }
+                    else
+                    {
+                        if (events.TryDequeue(out var item))
+                        {
+                            emitEvents.Add(item);
+                        }
+
+                        if (events.Count == 0 || emitEvents.Count >= currentOptions.BatchSize)
                         {
                             continueExtraction = false;
                         }
-                        else
-                        {
-                            events.TryTake(out var item);
-                            if (item != null)
-                            {
-                                emitEvents.Add(item);
-                            }
-
-                            if (events.Count == 0 || emitEvents.Count >= currentOptions.BatchSize)
-                            {
-                                continueExtraction = false;
-                            }
-                        }
                     }
+                }
 
-                    if (emitEvents.Count > 0)
-                    {
-                        await emitAction(emitEvents);
-                    }
-                });
+                return emitEvents;
+            }
+
+            while (true)
+            {
+                var emitEvents = GatherEvents();
+
+                if (emitEvents.Count > 0)
+                {
+                    await emitAction(emitEvents);
+                }
+
+                if (!isDisposing && events.Count < currentOptions.BatchSize)
+                {
+                    wh.WaitOne(currentOptions.BatchInterval != 0 ? currentOptions.BatchInterval : -1);
+                }
+                else if (isDisposing && events.Count == 0)
+                {
+                    break;
+                }
+            }
+
+            complete.Set();
         }
     }
 }

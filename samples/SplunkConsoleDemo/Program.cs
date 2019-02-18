@@ -27,14 +27,12 @@ namespace SplunkConsoleDemo
                 });
             });
 
-            var serviceProvider = services.BuildServiceProvider();
+            using (var serviceProvider = services.BuildServiceProvider())
+            {
+                var logger = serviceProvider.GetService<ILogger<Program>>();
 
-            var logger = serviceProvider.GetService<ILogger<Program>>();
-
-            logger.LogInformation("A log message");
-
-            // TODO - Bug with messages not being written on program exit.
-            Thread.Sleep(5000);
+                logger.LogInformation("A log message");
+            }
         }
     }
 }
