@@ -47,15 +47,21 @@ to send the data and with what credential:
 
 In the above examples we configure the splunk event collector with the libraries default 
 settings.  Settings can also be described in code as well as configuration by setting the 
-properties on an instance of a SplunkLoggerOptions object in a delegate supplied to the 
-AddSplunk call.
+properties on an instance of a `SplunkLoggerOptions` object in a delegate supplied to the 
+`AddSplunk` call as show below:
+```c#
+logging.AddSplunk(options => {
+        options.SplunkCollectorUrl = "https://splunk-server-name:8088/services/collector/";
+        options.AuthenticationToken = "92C168CF-C097-45F3-A3A8-128C3C509E9F";        
+    });
+```
 
 ## Usage
 
 Log messages to Splunk, just as with every other provider:
 
 ```c#
-logger.LogInformation("This is information");
+logger.LogInformation("This is some information");
 ```
 
 ## Advanced Topics
@@ -93,10 +99,43 @@ AddSplunk(SplunkEndpoint.Raw)
 ```
 
 ### Payload Customisation
-TODO
+The format of the data that is sent to Splunk can be customised via a delegate supplied to the `AddSplunk` call.
+This customised payload is treated slightly differently defending upon the endpoint being used, as detailed below.
+### Json endpoint
+For the Json endpoint the returned object is passed to the [Newtonsoft.Json][8] library for serialisation.  A simple example 
+with an anonymous type is shown below, but a concrete type could also be used making use of more advanced serialzation 
+features from the library.
 
-## Acknowlegements
-TODO
+```c#
+logging.AddSplunk(
+    data => 
+        new
+        {
+            time = data.Timestamp,
+            level = data.Level,
+            message = data.Message
+        });
+```
+### Raw endpoint
+For the Raw endpoint the returned object has `ToString` called upon it.  In the example below just simple a string is returned
+but this could be a more complex object which overrides ToString.
+
+```c#
+logging.AddSplunk(
+    data => 
+    {
+        var sb = new StringBuilder();
+        sb.Append($"{data.Timestamp}:{data.CategoryName}:{data.Level}:{data.Message}");
+        if (data.Exception != null)
+        {
+            sb.Append(data.Exception);
+        }
+        return sb.ToString();
+    });
+```
+
+## Also...
+Check out Andrew Horth's [Event Flow collector for the Splunk HEC][9].
 
 [0]: https://www.splunk.com/
 [1]: https://github.com/aspnet/Logging
@@ -106,3 +145,5 @@ TODO
 [5]: https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector
 [6]: https://github.com/dotnet/standard/blob/master/docs/versions/netstandard2.0.md
 [7]: https://github.com/coleman-c/ColeSoft.Extensions.Logging.Splunk#payload-customisation
+[8]: https://github.com/JamesNK/Newtonsoft.Json
+[9]: https://github.com/hortha/diagnostics-eventflow-splunk
