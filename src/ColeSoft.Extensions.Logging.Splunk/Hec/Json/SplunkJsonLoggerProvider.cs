@@ -10,12 +10,12 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Json
 #pragma warning disable CC0021 // Use nameof
     [ProviderAlias("Splunk")]
 #pragma warning restore CC0021 // Use nameof
-    internal class SplunkJsonLoggerProvider : SplunkHecBaseProvider
+    internal class SplunkJsonLoggerProvider : SplunkProviderBase
     {
         private readonly ISplunkJsonPayloadTransformer payloadTransformer;
 
-        public SplunkJsonLoggerProvider(IOptionsMonitor<SplunkLoggerOptions> options, ISplunkJsonPayloadTransformer payloadTransformer)
-            : base(options, "event")
+        public SplunkJsonLoggerProvider(IHttpClientFactory httpClientFactory, IOptionsMonitor<SplunkLoggerOptions> options, ISplunkJsonPayloadTransformer payloadTransformer)
+            : base(httpClientFactory, options, "event")
         {
             this.payloadTransformer = payloadTransformer;
         }

@@ -13,19 +13,21 @@ using Microsoft.Extensions.Options;
 
 namespace ColeSoft.Extensions.Logging.Splunk.Hec
 {
-    internal abstract class SplunkHecBaseProvider : ILoggerProvider, ISupportExternalScope
+    internal abstract class SplunkProviderBase : ILoggerProvider, ISupportExternalScope
     {
 #pragma warning disable CC0021 // Use nameof
         private static readonly string SplunkHeaderValue = "Splunk";
 #pragma warning restore CC0021 // Use nameof
 
+        private readonly IHttpClientFactory httpClientFactory;
         private readonly IOptionsMonitor<SplunkLoggerOptions> currentOptions;
         private readonly string endPointCustomization;
         private readonly IDisposable optionsReloadToken;
         private readonly SemaphoreSlim httpClientSemaphore = new SemaphoreSlim(1, 1);
 
-        protected SplunkHecBaseProvider(IOptionsMonitor<SplunkLoggerOptions> options, string endPointCustomization)
+        protected SplunkProviderBase(IHttpClientFactory httpClientFactory, IOptionsMonitor<SplunkLoggerOptions> options, string endPointCustomization)
         {
+            this.httpClientFactory = httpClientFactory;
             currentOptions = options;
             this.endPointCustomization = endPointCustomization;
 
@@ -35,6 +37,8 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
             optionsReloadToken = currentOptions.OnChange(ReloadLoggerOptions);
         }
 
+        protected internal IExternalScopeProvider ScopeProvider { get; set; } = NullExternalScopeProvider.Instance;
+
         protected SplunkLoggerOptions CurrentOptions => currentOptions.CurrentValue;
 
         protected ConcurrentDictionary<string, SplunkLogger> Loggers { get; } = new ConcurrentDictionary<string, SplunkLogger>();
@@ -42,8 +46,6 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
         protected BatchedSplunkLoggerProcessor MessageQueue { get; }
 
         protected HttpClient HttpClient { get; set; }
-
-        protected IExternalScopeProvider ScopeProvider { get; set; } = NullExternalScopeProvider.Instance;
 
         public abstract ILogger CreateLogger(string categoryName);
 
@@ -102,7 +104,11 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
                     break;
             }
 
-            Debug.WriteLine($"[DEBUG] Splunk HEC {loggerType} Body: {await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false)}.");
+            if (responseMessage.Content != null)
+            {
+                Debug.WriteLine(
+                    $"[DEBUG] Splunk HEC {loggerType} Body: {await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false)}.");
+            }
         }
 
         protected virtual void Dispose(bool disposing)
@@ -160,11 +166,9 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
 
         private HttpClient SetupHttpClient(SplunkLoggerOptions options)
         {
-            var httpClient =
-                new HttpClient
-                {
-                    BaseAddress = GetSplunkCollectorUrl(options, endPointCustomization)
-                };
+            var httpClient = httpClientFactory.CreateClient();
+
+            httpClient.BaseAddress = GetSplunkCollectorUrl(options, endPointCustomization);
 
             if (options.Timeout > 0)
             {

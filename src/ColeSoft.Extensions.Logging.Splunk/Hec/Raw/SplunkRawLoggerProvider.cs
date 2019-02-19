@@ -12,12 +12,12 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
 #pragma warning disable CC0021 // Use nameof
     [ProviderAlias("Splunk")]
 #pragma warning restore CC0021 // Use nameof
-    internal class SplunkRawLoggerProvider : SplunkHecBaseProvider
+    internal class SplunkRawLoggerProvider : SplunkProviderBase
     {
         private readonly ISplunkRawPayloadTransformer payloadTransformer;
 
-        public SplunkRawLoggerProvider(IOptionsMonitor<SplunkLoggerOptions> options, ISplunkRawPayloadTransformer payloadTransformer)
-            : base(options, "raw")
+        public SplunkRawLoggerProvider(IHttpClientFactory httpClientFactory, IOptionsMonitor<SplunkLoggerOptions> options, ISplunkRawPayloadTransformer payloadTransformer)
+            : base(httpClientFactory, options, "raw")
         {
             this.payloadTransformer = payloadTransformer;
         }
