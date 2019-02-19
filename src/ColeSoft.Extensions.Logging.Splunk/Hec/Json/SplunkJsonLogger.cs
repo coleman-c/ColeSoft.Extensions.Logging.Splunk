@@ -7,7 +7,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Json
 {
     internal class SplunkJsonLogger : SplunkLogger
     {
-        public SplunkJsonLogger(string name, BatchedSplunkLoggerProcessor loggerProcessor, ISplunkPayloadTransformer payloadTransformer)
+        public SplunkJsonLogger(string name, ISplunkLoggerProcessor loggerProcessor, ISplunkPayloadTransformer payloadTransformer)
             : base(name, loggerProcessor, payloadTransformer)
         {
         }

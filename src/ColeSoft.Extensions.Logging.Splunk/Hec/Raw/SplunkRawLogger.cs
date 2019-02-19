@@ -6,7 +6,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
 {
     internal class SplunkRawLogger : SplunkLogger
     {
-        public SplunkRawLogger(string name, BatchedSplunkLoggerProcessor loggerProcessor, ISplunkPayloadTransformer payloadTransformer)
+        public SplunkRawLogger(string name, ISplunkLoggerProcessor loggerProcessor, ISplunkPayloadTransformer payloadTransformer)
             : base(name, loggerProcessor, payloadTransformer)
         {
         }

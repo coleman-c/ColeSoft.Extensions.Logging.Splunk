@@ -1,9 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Text;
-using System.Threading;
 using ColeSoft.Extensions.Logging.Splunk;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +7,7 @@ namespace SplunkConsoleDemo
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             var services = new ServiceCollection();
 

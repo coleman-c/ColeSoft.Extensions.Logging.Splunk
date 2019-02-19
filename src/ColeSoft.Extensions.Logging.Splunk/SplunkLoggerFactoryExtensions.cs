@@ -119,6 +119,9 @@ namespace ColeSoft.Extensions.Logging.Splunk
                 throw new ArgumentNullException(nameof(configure));
             }
 
+            builder.Services.AddSingleton<IHttpClientProvider, HttpClientProvider>();
+            builder.Services.AddTransient<ISplunkLoggerProcessor, BatchedSplunkLoggerProcessor>();
+
             switch (endpoint)
             {
                 case SplunkEndpoint.Json:
@@ -131,7 +134,6 @@ namespace ColeSoft.Extensions.Logging.Splunk
                     throw new ArgumentOutOfRangeException(nameof(endpoint), endpoint, null);
             }
 
-            builder.AddSplunkJson(payloadCreator);
             builder.Services.Configure(configure);
 
             return builder;
@@ -147,9 +149,9 @@ namespace ColeSoft.Extensions.Logging.Splunk
                         ? new SplunkJsonPayloadTransformer(p => p)
                         : new SplunkJsonPayloadTransformer(payloadCreator));
 
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, SplunkJsonLoggerProvider>());
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<SplunkLoggerOptions>, LoggerProviderConfigureOptions<SplunkLoggerOptions, SplunkJsonLoggerProvider>>());
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IOptionsChangeTokenSource<SplunkLoggerOptions>, LoggerProviderOptionsChangeTokenSource<SplunkLoggerOptions, SplunkJsonLoggerProvider>>());
+            builder.Services.AddSingleton<ILoggerProvider, SplunkJsonLoggerProvider>();
+            builder.Services.AddSingleton<IConfigureOptions<SplunkLoggerOptions>, LoggerProviderConfigureOptions<SplunkLoggerOptions, SplunkJsonLoggerProvider>>();
+            builder.Services.AddSingleton<IOptionsChangeTokenSource<SplunkLoggerOptions>, LoggerProviderOptionsChangeTokenSource<SplunkLoggerOptions, SplunkJsonLoggerProvider>>();
 
             return builder;
         }

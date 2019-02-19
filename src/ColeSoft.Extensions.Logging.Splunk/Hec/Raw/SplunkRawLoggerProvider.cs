@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using ColeSoft.Extensions.Logging.Splunk.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -16,8 +17,8 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
     {
         private readonly ISplunkRawPayloadTransformer payloadTransformer;
 
-        public SplunkRawLoggerProvider(IHttpClientFactory httpClientFactory, IOptionsMonitor<SplunkLoggerOptions> options, ISplunkRawPayloadTransformer payloadTransformer)
-            : base(httpClientFactory, options, "raw")
+        public SplunkRawLoggerProvider(IHttpClientProvider httpClientFactory, IOptionsMonitor<SplunkLoggerOptions> options, ISplunkRawPayloadTransformer payloadTransformer, ISplunkLoggerProcessor loggerProcessor)
+            : base(httpClientFactory, options, loggerProcessor, "raw")
         {
             this.payloadTransformer = payloadTransformer;
         }

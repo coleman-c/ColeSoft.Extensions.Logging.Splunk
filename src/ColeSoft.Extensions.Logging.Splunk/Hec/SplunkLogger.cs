@@ -10,7 +10,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
     {
         private readonly string name;
 
-        protected SplunkLogger(string name, BatchedSplunkLoggerProcessor loggerProcessor, ISplunkPayloadTransformer payloadTransformer)
+        protected SplunkLogger(string name, ISplunkLoggerProcessor loggerProcessor, ISplunkPayloadTransformer payloadTransformer)
         {
             this.name = name ?? throw new ArgumentNullException(nameof(name));
             LoggerProcessor = loggerProcessor;
@@ -23,7 +23,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
 
         protected ISplunkPayloadTransformer PayloadTransformer { get; }
 
-        protected BatchedSplunkLoggerProcessor LoggerProcessor { get; }
+        protected ISplunkLoggerProcessor LoggerProcessor { get; }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {

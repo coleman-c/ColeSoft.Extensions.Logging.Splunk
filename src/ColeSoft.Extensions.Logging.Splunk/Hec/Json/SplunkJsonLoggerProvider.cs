@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using ColeSoft.Extensions.Logging.Splunk.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -14,8 +15,8 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Json
     {
         private readonly ISplunkJsonPayloadTransformer payloadTransformer;
 
-        public SplunkJsonLoggerProvider(IHttpClientFactory httpClientFactory, IOptionsMonitor<SplunkLoggerOptions> options, ISplunkJsonPayloadTransformer payloadTransformer)
-            : base(httpClientFactory, options, "event")
+        public SplunkJsonLoggerProvider(IHttpClientProvider httpClientFactory, IOptionsMonitor<SplunkLoggerOptions> options, ISplunkJsonPayloadTransformer payloadTransformer, ISplunkLoggerProcessor loggerProcessor)
+            : base(httpClientFactory, options, loggerProcessor, "event")
         {
             this.payloadTransformer = payloadTransformer;
         }

@@ -7,22 +7,19 @@ using Microsoft.Extensions.Options;
 
 namespace ColeSoft.Extensions.Logging.Splunk.Utils
 {
-    internal sealed class BatchedSplunkLoggerProcessor : IDisposable
+    internal sealed class BatchedSplunkLoggerProcessor : ISplunkLoggerProcessor, IDisposable
     {
         private readonly ConcurrentQueue<string> events = new ConcurrentQueue<string>();
         private readonly AutoResetEvent wh = new AutoResetEvent(false);
         private readonly AutoResetEvent complete = new AutoResetEvent(false);
-        private readonly Func<IReadOnlyList<string>, Task> emitAction;
         private readonly IDisposable optionsReloadToken;
 
         private SplunkLoggerOptions currentOptions;
         private bool isDisposed;
         private bool isDisposing;
 
-        public BatchedSplunkLoggerProcessor(IOptionsMonitor<SplunkLoggerOptions> options, Func<IReadOnlyList<string>, Task> emitAction)
+        public BatchedSplunkLoggerProcessor(IOptionsMonitor<SplunkLoggerOptions> options)
         {
-            this.emitAction = emitAction ?? throw new ArgumentNullException(nameof(emitAction));
-
             currentOptions = options.CurrentValue;
             optionsReloadToken = options.OnChange(
                 o =>
@@ -32,6 +29,8 @@ namespace ColeSoft.Extensions.Logging.Splunk.Utils
 
             Task.Factory.StartNew(EmitAsync, TaskCreationOptions.LongRunning);
         }
+
+        public Func<IReadOnlyList<string>, Task> EmitAction { get; set; }
 
         public void EnqueueMessage(string message)
         {
@@ -98,7 +97,11 @@ namespace ColeSoft.Extensions.Logging.Splunk.Utils
 
                 if (emitEvents.Count > 0)
                 {
-                    await emitAction(emitEvents);
+                    var handler = EmitAction;
+                    if (handler != null)
+                    {
+                        await handler(emitEvents);
+                    }
                 }
 
                 if (!isDisposing && events.Count < currentOptions.BatchSize)

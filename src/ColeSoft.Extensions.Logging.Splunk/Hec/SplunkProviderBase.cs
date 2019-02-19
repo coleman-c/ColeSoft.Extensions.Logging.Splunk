@@ -19,19 +19,21 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
         private static readonly string SplunkHeaderValue = "Splunk";
 #pragma warning restore CC0021 // Use nameof
 
-        private readonly IHttpClientFactory httpClientFactory;
+        private readonly IHttpClientProvider httpClientFactory;
         private readonly IOptionsMonitor<SplunkLoggerOptions> currentOptions;
         private readonly string endPointCustomization;
         private readonly IDisposable optionsReloadToken;
         private readonly SemaphoreSlim httpClientSemaphore = new SemaphoreSlim(1, 1);
 
-        protected SplunkProviderBase(IHttpClientFactory httpClientFactory, IOptionsMonitor<SplunkLoggerOptions> options, string endPointCustomization)
+        protected SplunkProviderBase(IHttpClientProvider httpClientFactory, IOptionsMonitor<SplunkLoggerOptions> options, ISplunkLoggerProcessor loggerProcessor, string endPointCustomization)
         {
             this.httpClientFactory = httpClientFactory;
             currentOptions = options;
             this.endPointCustomization = endPointCustomization;
 
-            MessageQueue = new BatchedSplunkLoggerProcessor(options, SendToSplunkInternalAsync);
+            MessageQueue = loggerProcessor;
+            MessageQueue.EmitAction = SendToSplunkInternalAsync;
+
             ReloadLoggerOptions(options.CurrentValue);
 
             optionsReloadToken = currentOptions.OnChange(ReloadLoggerOptions);
@@ -43,7 +45,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
 
         protected ConcurrentDictionary<string, SplunkLogger> Loggers { get; } = new ConcurrentDictionary<string, SplunkLogger>();
 
-        protected BatchedSplunkLoggerProcessor MessageQueue { get; }
+        protected ISplunkLoggerProcessor MessageQueue { get; }
 
         protected HttpClient HttpClient { get; set; }
 
@@ -116,7 +118,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
             if (disposing)
             {
                 optionsReloadToken?.Dispose();
-                MessageQueue.Dispose();
+                (MessageQueue as IDisposable)?.Dispose();
                 HttpClient.Dispose();
                 httpClientSemaphore.Dispose();
             }

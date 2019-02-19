@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using ColeSoft.Extensions.Logging.Splunk.Hec;
 using ColeSoft.Extensions.Logging.Splunk.Hec.Raw;
+using ColeSoft.Extensions.Logging.Splunk.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -20,9 +20,9 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
         public void SetScopeProvider_WhenInvoked_SetsProvider()
         {
             // arrange
-            var httpClientFactory = Mock.Of<IHttpClientFactory>();
+            var httpClientFactory = Mock.Of<IHttpClientProvider>();
 
-            Mock.Get(httpClientFactory).Setup(s => s.CreateClient(Options.DefaultName)).Returns(new HttpClient());
+            Mock.Get(httpClientFactory).Setup(s => s.CreateClient()).Returns(new HttpClient());
 
             var optionsMonitor = Mock.Of<IOptionsMonitor<SplunkLoggerOptions>>();
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
@@ -30,11 +30,12 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
                     { SplunkCollectorUrl = "https://server/collector/events/", AuthenticationToken = "AuthToken" });
             Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
                 .Returns(Mock.Of<IDisposable>());
+            var splunkLoggerProcessor = Mock.Of<ISplunkLoggerProcessor>();
             var rawPayloadTransformer = Mock.Of<ISplunkRawPayloadTransformer>();
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
 
-            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor, rawPayloadTransformer))
+            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor,  rawPayloadTransformer, splunkLoggerProcessor))
             {
                 // act
                 var cat1Logger = actor.CreateLogger("Cat1");
@@ -52,12 +53,13 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
         {
             // arrange
             var mockedHttpHandler = new MockHttpMessageHandler();
-            var httpClientFactory = Mock.Of<IHttpClientFactory>();
-            Mock.Get(httpClientFactory).Setup(s => s.CreateClient(Options.DefaultName))
+            var httpClientFactory = Mock.Of<IHttpClientProvider>();
+            Mock.Get(httpClientFactory).Setup(s => s.CreateClient())
                 .Returns(new HttpClient(mockedHttpHandler));
             var optionsMonitor = Mock.Of<IOptionsMonitor<SplunkLoggerOptions>>();
             Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
                 .Returns(Mock.Of<IDisposable>());
+            var splunkLoggerProcessor = Mock.Of<ISplunkLoggerProcessor>();
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
                 .Returns(new SplunkLoggerOptions
                     { SplunkCollectorUrl = "https://server/collector/events", AuthenticationToken = "AuthToken" });
@@ -66,16 +68,12 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
 
-            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor, rawPayloadTransformer))
+            using (var actor = new TestLoggerProvider(httpClientFactory, optionsMonitor, splunkLoggerProcessor, "test"))
             {
                 // act
-                var cat1Logger = actor.CreateLogger("Cat1");
-                cat1Logger.LogError("New Error");
+                // assert
+                Assert.StartsWith("https://server/collector/events/", actor.GetHttpClientForTestInspection().BaseAddress.ToString());
             }
-
-            // assert
-            Assert.Single(mockedHttpHandler.Requests);
-            Assert.StartsWith("https://server/collector/events/", mockedHttpHandler.Requests[0].RequestUri.ToString());
         }
 
         [Fact]
@@ -83,12 +81,14 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
         {
             // arrange
             var mockedHttpHandler = new MockHttpMessageHandler();
-            var httpClientFactory = Mock.Of<IHttpClientFactory>();
-            Mock.Get(httpClientFactory).Setup(s => s.CreateClient(Options.DefaultName))
+            var httpClientFactory = Mock.Of<IHttpClientProvider>();
+            Mock.Get(httpClientFactory).Setup(s => s.CreateClient())
                 .Returns(new HttpClient(mockedHttpHandler));
             var optionsMonitor = Mock.Of<IOptionsMonitor<SplunkLoggerOptions>>();
             Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
                 .Returns(Mock.Of<IDisposable>());
+            var splunkLoggerProcessor = Mock.Of<ISplunkLoggerProcessor>();
+            Mock.Get(splunkLoggerProcessor).Setup(s => s.EnqueueMessage(It.IsAny<string>()));
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
                 .Returns(new SplunkLoggerOptions
                     { SplunkCollectorUrl = "https://server/collector/events", AuthenticationToken = "AuthToken" });
@@ -97,16 +97,12 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
 
-            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor, rawPayloadTransformer))
+            using (var actor = new TestLoggerProvider(httpClientFactory, optionsMonitor, splunkLoggerProcessor, "test"))
             {
                 // act
-                var cat1Logger = actor.CreateLogger("Cat1");
-                cat1Logger.LogError("New Error");
+                // assert
+                Assert.StartsWith("https://server/collector/events/test", actor.GetHttpClientForTestInspection().BaseAddress.ToString());
             }
-
-            // assert
-            Assert.Single(mockedHttpHandler.Requests);
-            Assert.StartsWith("https://server/collector/events/raw", mockedHttpHandler.Requests[0].RequestUri.ToString());
         }
 
         [Fact]
@@ -114,12 +110,13 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
         {
             // arrange
             var mockedHttpHandler = new MockHttpMessageHandler();
-            var httpClientFactory = Mock.Of<IHttpClientFactory>();
-            Mock.Get(httpClientFactory).Setup(s => s.CreateClient(Options.DefaultName))
+            var httpClientFactory = Mock.Of<IHttpClientProvider>();
+            Mock.Get(httpClientFactory).Setup(s => s.CreateClient())
                 .Returns(new HttpClient(mockedHttpHandler));
             var optionsMonitor = Mock.Of<IOptionsMonitor<SplunkLoggerOptions>>();
             Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
                 .Returns(Mock.Of<IDisposable>());
+            var splunkLoggerProcessor = Mock.Of<ISplunkLoggerProcessor>();
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
                 .Returns(
                     new SplunkLoggerOptions
@@ -133,16 +130,12 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
 
-            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor, rawPayloadTransformer))
+            using (var actor = new TestLoggerProvider(httpClientFactory, optionsMonitor, splunkLoggerProcessor, "test"))
             {
                 // act
-                var cat1Logger = actor.CreateLogger("Cat1");
-                cat1Logger.LogError("New Error");
+                // assert
+                Assert.Contains("?channel=", actor.GetHttpClientForTestInspection().BaseAddress.ToString());
             }
-
-            // assert
-            Assert.Single(mockedHttpHandler.Requests);
-            Assert.Contains("?channel=", mockedHttpHandler.Requests[0].RequestUri.ToString());
         }
 
         [Fact]
@@ -150,12 +143,13 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
         {
             // arrange
             var mockedHttpHandler = new MockHttpMessageHandler();
-            var httpClientFactory = Mock.Of<IHttpClientFactory>();
-            Mock.Get(httpClientFactory).Setup(s => s.CreateClient(Options.DefaultName))
+            var httpClientFactory = Mock.Of<IHttpClientProvider>();
+            Mock.Get(httpClientFactory).Setup(s => s.CreateClient())
                 .Returns(new HttpClient(mockedHttpHandler));
             var optionsMonitor = Mock.Of<IOptionsMonitor<SplunkLoggerOptions>>();
             Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
                 .Returns(Mock.Of<IDisposable>());
+            var splunkLoggerProcessor = Mock.Of<ISplunkLoggerProcessor>();
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
                 .Returns(
                     new SplunkLoggerOptions
@@ -170,16 +164,12 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
 
-            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor, rawPayloadTransformer))
+            using (var actor = new TestLoggerProvider(httpClientFactory, optionsMonitor, splunkLoggerProcessor, "test"))
             {
                 // act
-                var cat1Logger = actor.CreateLogger("Cat1");
-                cat1Logger.LogError("New Error");
+                // assert
+                Assert.Contains("&token=AuthToken", actor.GetHttpClientForTestInspection().BaseAddress.ToString());
             }
-
-            // assert
-            Assert.Single(mockedHttpHandler.Requests);
-            Assert.Contains("&token=AuthToken", mockedHttpHandler.Requests[0].RequestUri.ToString());
         }
 
         [Fact]
@@ -187,12 +177,13 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
         {
             // arrange
             var mockedHttpHandler = new MockHttpMessageHandler();
-            var httpClientFactory = Mock.Of<IHttpClientFactory>();
-            Mock.Get(httpClientFactory).Setup(s => s.CreateClient(Options.DefaultName))
+            var httpClientFactory = Mock.Of<IHttpClientProvider>();
+            Mock.Get(httpClientFactory).Setup(s => s.CreateClient())
                 .Returns(new HttpClient(mockedHttpHandler));
             var optionsMonitor = Mock.Of<IOptionsMonitor<SplunkLoggerOptions>>();
             Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
                 .Returns(Mock.Of<IDisposable>());
+            var splunkLoggerProcessor = Mock.Of<ISplunkLoggerProcessor>();
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
                 .Returns(
                     new SplunkLoggerOptions
@@ -206,29 +197,26 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
 
-            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor, rawPayloadTransformer))
+            using (var actor = new TestLoggerProvider(httpClientFactory, optionsMonitor, splunkLoggerProcessor, "test"))
             {
                 // act
-                var cat1Logger = actor.CreateLogger("Cat1");
-                cat1Logger.LogError("New Error");
+                // assert
+                Assert.Contains("?token=AuthToken", actor.GetHttpClientForTestInspection().BaseAddress.ToString());
             }
-
-            // assert
-            Assert.Single(mockedHttpHandler.Requests);
-            Assert.Contains("?token=AuthToken", mockedHttpHandler.Requests[0].RequestUri.ToString());
         }
 
-        [Fact(Skip = "Need to work out how to test timeout.")]
+        [Fact]
         public void SplunkLoggerOptions_WhenTimeoutGreaterThanZero_SetsTimeout()
         {
             // arrange
             var mockedHttpHandler = new MockHttpMessageHandler();
-            var httpClientFactory = Mock.Of<IHttpClientFactory>();
-            Mock.Get(httpClientFactory).Setup(s => s.CreateClient(Options.DefaultName))
+            var httpClientFactory = Mock.Of<IHttpClientProvider>();
+            Mock.Get(httpClientFactory).Setup(s => s.CreateClient())
                 .Returns(new HttpClient(mockedHttpHandler));
             var optionsMonitor = Mock.Of<IOptionsMonitor<SplunkLoggerOptions>>();
             Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
                 .Returns(Mock.Of<IDisposable>());
+            var splunkLoggerProcessor = Mock.Of<ISplunkLoggerProcessor>();
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
                 .Returns(
                     new SplunkLoggerOptions
@@ -242,16 +230,13 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
 
-            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor, rawPayloadTransformer))
+            using (var actor = new TestLoggerProvider(httpClientFactory, optionsMonitor, splunkLoggerProcessor, "test"))
             {
                 // act
-                var cat1Logger = actor.CreateLogger("Cat1");
-                cat1Logger.LogError("New Error");
-            }
 
-            // assert
-            Assert.Single(mockedHttpHandler.Requests);
-            Assert.Contains("?token=AuthToken", mockedHttpHandler.Requests[0].RequestUri.ToString());
+                // assert
+                Assert.Equal(TimeSpan.FromMilliseconds(1000), actor.GetHttpClientForTestInspection().Timeout);
+            }
         }
 
         [Fact]
@@ -259,36 +244,34 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
         {
             // arrange
             var mockedHttpHandler = new MockHttpMessageHandler();
-            var httpClientFactory = Mock.Of<IHttpClientFactory>();
-            Mock.Get(httpClientFactory).Setup(s => s.CreateClient(Options.DefaultName))
+            var httpClientFactory = Mock.Of<IHttpClientProvider>();
+            Mock.Get(httpClientFactory).Setup(s => s.CreateClient())
                 .Returns(new HttpClient(mockedHttpHandler));
             var optionsMonitor = Mock.Of<IOptionsMonitor<SplunkLoggerOptions>>();
             Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
                 .Returns(Mock.Of<IDisposable>());
+            var splunkLoggerProcessor = Mock.Of<ISplunkLoggerProcessor>();
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
                 .Returns(
                     new SplunkLoggerOptions
                     {
                         SplunkCollectorUrl = "https://server/collector/events",
                         AuthenticationToken = "AuthToken",
-                        CustomHeaders = new Dictionary<string, string>() { { "custom1", "value1" } }
+                        CustomHeaders = new Dictionary<string, string> { { "custom1", "value1" } }
                     });
             var rawPayloadTransformer = Mock.Of<ISplunkRawPayloadTransformer>();
             Mock.Get(rawPayloadTransformer).Setup(s => s.Transform(It.IsAny<LogData>())).Returns("Message");
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
 
-            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor, rawPayloadTransformer))
+            using (var actor = new TestLoggerProvider(httpClientFactory, optionsMonitor, splunkLoggerProcessor, "test"))
             {
                 // act
-                var cat1Logger = actor.CreateLogger("Cat1");
-                cat1Logger.LogError("New Error");
+                // assert
+                Assert.Single(actor.GetHttpClientForTestInspection()
+                    .DefaultRequestHeaders
+                    .Where(h => h.Key == "custom1" && h.Value.Single() == "value1"));
             }
-
-            // assert
-            Assert.Single(mockedHttpHandler.Requests);
-            Assert.Single(mockedHttpHandler.Requests[0].Headers
-                .Where(h => h.Key == "custom1" && h.Value.Single() == "value1"));
         }
 
         [Fact]
@@ -296,12 +279,13 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
         {
             // arrange
             var mockedHttpHandler = new MockHttpMessageHandler();
-            var httpClientFactory = Mock.Of<IHttpClientFactory>();
-            Mock.Get(httpClientFactory).Setup(s => s.CreateClient(Options.DefaultName))
+            var httpClientFactory = Mock.Of<IHttpClientProvider>();
+            Mock.Get(httpClientFactory).Setup(s => s.CreateClient())
                 .Returns(new HttpClient(mockedHttpHandler));
             var optionsMonitor = Mock.Of<IOptionsMonitor<SplunkLoggerOptions>>();
             Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
                 .Returns(Mock.Of<IDisposable>());
+            var splunkLoggerProcessor = Mock.Of<ISplunkLoggerProcessor>();
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
                 .Returns(
                     new SplunkLoggerOptions
@@ -315,17 +299,16 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
 
-            using (var actor = new SplunkRawLoggerProvider(httpClientFactory, optionsMonitor, rawPayloadTransformer))
+            using (var actor = new TestLoggerProvider(httpClientFactory, optionsMonitor, splunkLoggerProcessor, "test"))
             {
                 // act
-                var cat1Logger = actor.CreateLogger("Cat1");
-                cat1Logger.LogError("New Error");
-            }
+                var headers = actor.GetHttpClientForTestInspection()
+                    .DefaultRequestHeaders
+                    .Where(h => h.Key == "x-splunk-request-channel" && Guid.TryParse(h.Value.Single(), out _));
 
-            // assert
-            Assert.Single(mockedHttpHandler.Requests);
-            Assert.Single(mockedHttpHandler.Requests[0].Headers.Where(h =>
-                h.Key == "x-splunk-request-channel" && Guid.TryParse(h.Value.Single(), out _)));
+                // assert
+                Assert.Single(headers);
+            }
         }
     }
 }
