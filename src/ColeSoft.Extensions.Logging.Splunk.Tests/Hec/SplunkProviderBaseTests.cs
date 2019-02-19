@@ -28,6 +28,8 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests.Hec
             Mock.Get(optionsMonitor).SetupGet(s => s.CurrentValue)
                 .Returns(new SplunkLoggerOptions
                     { SplunkCollectorUrl = "https://server/collector/events/", AuthenticationToken = "AuthToken" });
+            Mock.Get(optionsMonitor).Setup(s => s.OnChange(It.IsAny<Action<SplunkLoggerOptions, string>>()))
+                .Returns(Mock.Of<IDisposable>());
             var rawPayloadTransformer = Mock.Of<ISplunkRawPayloadTransformer>();
             var externalScopeProvider = Mock.Of<IExternalScopeProvider>();
             Mock.Get(externalScopeProvider).Setup(s => s.Push("state1")).Verifiable();
