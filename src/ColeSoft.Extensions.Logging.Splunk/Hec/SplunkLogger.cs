@@ -41,7 +41,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
 
             if (!string.IsNullOrEmpty(message) || exception != null)
             {
-                WriteMessage(logLevel, name, eventId.Id, message, exception);
+                WriteMessage(logLevel, name, eventId, message, exception);
             }
         }
 
