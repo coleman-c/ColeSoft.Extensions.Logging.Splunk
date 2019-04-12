@@ -28,10 +28,9 @@ steps:
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
 
-- task: DotNetCoreCLI@2
-  displayName: dotnet nuget push
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
   inputs:
-    command: custom
-    custom: nuget
-    arguments: push $(Build.ArtifactStagingDirectory)\packages\*.nupkg --source https://api.nuget.org/v3/index.json --no-symbols --no-service-endpoint --api-key $(nuget-apikey)
+    command: push
+    publishVstsFeed: 'Packages'
+    allowPackageConflicts: true
