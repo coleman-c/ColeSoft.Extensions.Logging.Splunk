@@ -150,7 +150,8 @@ namespace ColeSoft.Extensions.Logging.Splunk
                         : new SplunkJsonPayloadTransformer(payloadCreator));
 
             builder.Services.AddSingleton<ILoggerProvider, SplunkJsonLoggerProvider>();
-            builder.Services.AddSingleton<IConfigureOptions<SplunkLoggerOptions>, LoggerProviderConfigureOptions<SplunkLoggerOptions, SplunkJsonLoggerProvider>>();
+            builder.Services.AddOptions<SplunkLoggerOptions>().ValidateDataAnnotations();
+            builder.Services.AddSingleton<IConfigureOptions<SplunkLoggerOptions>, LoggerProviderConfigureOptions<SplunkLoggerOptions, SplunkJsonLoggerProvider>>();            
             builder.Services.AddSingleton<IOptionsChangeTokenSource<SplunkLoggerOptions>, LoggerProviderOptionsChangeTokenSource<SplunkLoggerOptions, SplunkJsonLoggerProvider>>();
 
             return builder;
@@ -180,6 +181,7 @@ namespace ColeSoft.Extensions.Logging.Splunk
                         : new SplunkRawPayloadTransformer(payloadCreator));
 
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, SplunkRawLoggerProvider>());
+            builder.Services.AddOptions<SplunkLoggerOptions>().ValidateDataAnnotations();
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<SplunkLoggerOptions>, LoggerProviderConfigureOptions<SplunkLoggerOptions, SplunkRawLoggerProvider>>());
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IOptionsChangeTokenSource<SplunkLoggerOptions>, LoggerProviderOptionsChangeTokenSource<SplunkLoggerOptions, SplunkRawLoggerProvider>>());
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace ColeSoft.Extensions.Logging.Splunk
 {
@@ -53,12 +54,14 @@ namespace ColeSoft.Extensions.Logging.Splunk
         /// <remarks>This must be specified.</remarks>
         /// <example>https://http-inputs-&lt;customer&gt;.splunkcloud.com/services/collector.</example>
         /// <example>https://my-server:8088/services/collector.</example>
+        [Required]
         public string SplunkCollectorUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the HEC authentication token.
         /// </summary>
         /// <remarks>This must be specified.  See <see href="http://dev.splunk.com/view/event-collector/SP-CAAAE6P#auth"/> for more information.</remarks>
+        [Required]
         public string AuthenticationToken { get; set; }
 
         /// <summary>
