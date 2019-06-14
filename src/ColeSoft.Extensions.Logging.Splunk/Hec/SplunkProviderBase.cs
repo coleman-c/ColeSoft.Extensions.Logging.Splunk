@@ -160,6 +160,10 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
             {
                 await SendToSplunkAsync(messages);
             }
+            catch (Exception e)
+            {
+                Debug.Write(e, "Failed to send log messages to Splunk");
+            }
             finally
             {
                 httpClientSemaphore.Release();
