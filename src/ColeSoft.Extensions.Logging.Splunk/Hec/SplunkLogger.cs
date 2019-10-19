@@ -53,20 +53,5 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec
         public IDisposable BeginScope<TState>(TState state) => ScopeProvider?.Push(state) ?? NullScope.Instance;
 
         protected abstract void WriteMessage(LogLevel logLevel, string logName, EventId eventId, string message, Exception exception);
-
-        protected string[] GetScopeInformation()
-        {
-            var scopeProvider = ScopeProvider;
-            if (Options.IncludeScopes && scopeProvider != null)
-            {
-                var scopes = new List<string>();
-
-                scopeProvider.ForEachScope<object>((scope, state) => { scopes.Add(scope.ToString()); }, null);
-
-                return scopes.ToArray();
-            }
-
-            return Array.Empty<string>();
-        }
     }
 }

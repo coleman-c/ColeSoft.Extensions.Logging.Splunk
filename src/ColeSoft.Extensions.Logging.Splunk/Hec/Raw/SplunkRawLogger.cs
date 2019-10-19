@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ColeSoft.Extensions.Logging.Splunk.Utils;
 using Microsoft.Extensions.Logging;
 
@@ -19,7 +20,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
                 {
                     Timestamp = DateTime.UtcNow.FormatForSplunk(Options.TimestampFormat),
                     CategoryName = logName,
-                    Scope = GetScopeInformation(),
+                    Scope = GetTextualScopeInformation(),
                     Level = logLevel,
                     Event = eventId,
                     Message = message,
@@ -27,6 +28,21 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Raw
                 }).ToString();
 
             LoggerProcessor.EnqueueMessage(splunkEventData);
+        }
+
+        protected string[] GetTextualScopeInformation()
+        {
+            var scopeProvider = ScopeProvider;
+            if (Options.IncludeScopes && scopeProvider != null)
+            {
+                var scopes = new List<string>();
+
+                scopeProvider.ForEachScope<object>((scope, state) => { scopes.Add(scope.ToString()); }, null);
+
+                return scopes.ToArray();
+            }
+
+            return Array.Empty<string>();
         }
     }
 }

@@ -16,6 +16,8 @@ namespace ColeSoft.Extensions.Logging.Splunk
             ChannelIdType = ChannelIdOption.None;
             Timeout = 1500;
             IncludeScopes = false;
+            IncludeStructuredScopesAsFields = true;
+            IncludeStructuredScopesAsText = false;
             UseAuthTokenAsQueryString = false;
             BatchInterval = 1000;
             BatchSize = 50;
@@ -135,5 +137,19 @@ namespace ColeSoft.Extensions.Logging.Splunk
         /// Requests containing the "fields" property must be sent to the <see cref="SplunkEndpoint.Json"/>, or they will not be indexed.
         /// </summary>
         public Dictionary<string, string> Fields { get; set; }
+
+        /// <summary>
+        /// When BeginScope is called with a type that is assignable to IEnumerable&lt;KeyValuePair&lt;string, object>>
+        /// then the object's ToString method will be called.  Default is false; 
+        /// /// </summary>
+        /// <remarks>Only applicable in to the <see cref="SplunkEndpoint.Json"/> endpoint and <see cref="IncludeScopes"/> is true.</remarks>
+        public bool IncludeStructuredScopesAsText { get; set; }
+
+        /// <summary>
+        /// When BeginScope is called with a type that is assignable to IEnumerable&lt;KeyValuePair&lt;string, object>>
+        /// then the object's values will be added as key value pairs to the Fields.  Default is true.
+        /// </summary>
+        /// <remarks>Only applicable in to the <see cref="SplunkEndpoint.Json"/> endpoint and <see cref="IncludeScopes"/> is true.</remarks>
+        public bool IncludeStructuredScopesAsFields { get; set; }
     }
 }
