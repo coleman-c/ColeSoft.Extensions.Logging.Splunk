@@ -71,7 +71,7 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Json
 
             foreach (var kvp in GetStructuredScopeInformation())
             {
-                fieldsDictionary.Add(kvp.Key, kvp.Value.ToString());
+                fieldsDictionary.Add(kvp.Key, kvp.Value?.ToString());
             }
 
             var splunkEventData = new SplunkEventData(
