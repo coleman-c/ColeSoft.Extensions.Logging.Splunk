@@ -23,12 +23,9 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Json
                 scopeProvider.ForEachScope<object>(
                     (scope, state) =>
                     {
-                        if (scope is IEnumerable<KeyValuePair<string, object>> kvps)
+                        if (scope is IEnumerable<KeyValuePair<string, object>> kvps && Options.IncludeStructuredScopesAsFields)
                         {
-                            if (Options.IncludeStructuredScopesAsFields)
-                            {
-                                scopes.AddRange(kvps);
-                            }
+                            scopes.AddRange(kvps);
                         }
                     },
                     null);
@@ -66,12 +63,12 @@ namespace ColeSoft.Extensions.Logging.Splunk.Hec.Json
         {
             var dateTime = DateTime.UtcNow;
 
-            var fieldsDictionary = new Dictionary<string, string>(
-                Options.Fields);
+            var fieldsDictionary = new Dictionary<string, string>(Options.Fields);
 
             foreach (var kvp in GetStructuredScopeInformation())
             {
-                fieldsDictionary.Add(kvp.Key, kvp.Value?.ToString());
+                // Overwrite later earlier scope info with more recent.
+                fieldsDictionary[kvp.Key] = kvp.Value?.ToString();
             }
 
             var splunkEventData = new SplunkEventData(
