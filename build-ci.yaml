@@ -1,9 +1,9 @@
 steps:
-- task: DotNetCoreInstaller@0
-  displayName: install dotnet 2.1.401
+- task: UseDotNet@2
+  displayName: install dotnet 3.x
   inputs:
     packageType: 'sdk'
-    version: '2.1.401' 
+    version: '3.x' 
  
 - task: DotNetCoreCLI@2
   displayName: dotnet build
