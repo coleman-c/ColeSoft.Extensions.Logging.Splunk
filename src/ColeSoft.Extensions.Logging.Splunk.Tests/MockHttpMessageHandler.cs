@@ -10,11 +10,11 @@ namespace ColeSoft.Extensions.Logging.Splunk.Tests
     {
         public List<HttpRequestMessage> Requests { get; } = new List<HttpRequestMessage>();
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Requests.Add(request);
 
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
         }
     }
 }

@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using ColeSoft.Extensions.Logging.Splunk.Utils;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions.Internal;
 
 namespace ColeSoft.Extensions.Logging.Splunk.Hec
 {

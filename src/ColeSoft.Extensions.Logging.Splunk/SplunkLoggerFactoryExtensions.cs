@@ -151,7 +151,7 @@ namespace ColeSoft.Extensions.Logging.Splunk
 
             builder.Services.AddSingleton<ILoggerProvider, SplunkJsonLoggerProvider>();
             builder.Services.AddOptions<SplunkLoggerOptions>().ValidateDataAnnotations();
-            builder.Services.AddSingleton<IConfigureOptions<SplunkLoggerOptions>, LoggerProviderConfigureOptions<SplunkLoggerOptions, SplunkJsonLoggerProvider>>();            
+            builder.Services.AddSingleton<IConfigureOptions<SplunkLoggerOptions>, LoggerProviderConfigureOptions<SplunkLoggerOptions, SplunkJsonLoggerProvider>>();
             builder.Services.AddSingleton<IOptionsChangeTokenSource<SplunkLoggerOptions>, LoggerProviderOptionsChangeTokenSource<SplunkLoggerOptions, SplunkJsonLoggerProvider>>();
 
             return builder;
