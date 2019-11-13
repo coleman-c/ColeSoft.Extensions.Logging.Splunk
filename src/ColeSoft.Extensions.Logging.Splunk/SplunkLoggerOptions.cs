@@ -140,8 +140,8 @@ namespace ColeSoft.Extensions.Logging.Splunk
 
         /// <summary>
         /// When BeginScope is called with a type that is assignable to IEnumerable&lt;KeyValuePair&lt;string, object>>
-        /// then the object's ToString method will be called.  Default is false;
-        /// /// </summary>
+        /// then the object's ToString method will be called.  Default is false.
+        /// </summary>
         /// <remarks>Only applicable in to the <see cref="SplunkEndpoint.Json"/> endpoint and <see cref="IncludeScopes"/> is true.</remarks>
         public bool IncludeStructuredScopesAsText { get; set; }
 
